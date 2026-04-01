@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Virtual UNINPAHU</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 720px;
+            background: #ffffff;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 14px 38px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #ff5a1f, #ff7a1a);
+            color: white;
+            padding: 16px 18px;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: white;
+            padding: 6px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .header-text p {
+            margin: 4px 0 0 0;
+            font-size: 13px;
+            opacity: 0.95;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            background: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .welcome-card {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            border-radius: 16px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
+
+        .quick-btn {
+            background: white;
+            border: 1px solid #fdba74;
+            color: #c2410c;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .quick-btn:hover {
+            background: #fff7ed;
+        }
+
+        .message-row {
+            display: flex;
+            width: 100%;
+        }
+
+        .message-row.bot {
+            justify-content: flex-start;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message {
+            max-width: 82%;
+            padding: 12px 14px;
+            border-radius: 16px;
+            line-height: 1.45;
+            font-size: 14px;
+            white-space: pre-line;
+            word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+        }
+
+        .message.bot {
+            background: #e5e7eb;
+            color: #111827;
+            border-bottom-left-radius: 6px;
+        }
+
+        .message.user {
+            background: #ff5a1f;
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .typing {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: #e5e7eb;
+            color: #374151;
+            font-size: 13px;
+            border-bottom-left-radius: 6px;
+        }
+
+        .chat-input {
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            padding: 12px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 24px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input input:focus {
+            border-color: #ff5a1f;
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.15);
+        }
+
+        .chat-input button {
+            width: 46px;
+            height: 46px;
+            border: none;
+            border-radius: 50%;
+            background: #ff5a1f;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .chat-input button:hover {
+            background: #e64d14;
+        }
+
+        .chat-input button:active {
+            transform: scale(0.96);
+        }
+
+        .footer-note {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 450px) {
+            .chat-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-top">
+                <img class="header-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Logo UNINPAHU">
+                <div class="header-text">
+                    <h1>Asistente Virtual</h1>
+                    <p>UNINPAHU · Consulta académica</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="chat" class="chat-messages">
+            <div class="welcome-card">
+                Bienvenido. Este asistente puede orientarte sobre tus materias, notas y profesores.
+                Para consultar información académica, el sistema solicitará el código del estudiante.
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="usarPregunta('hola')">Saludar</button>
+                <button class="quick-btn" onclick="usarPregunta('ayuda')">Ayuda</button>
+                <button class="quick-btn" onclick="usarPregunta('qué materias tengo')">Materias</button>
+                <button class="quick-btn" onclick="usarPregunta('qué notas tengo')">Notas</button>
+                <button class="quick-btn" onclick="usarPregunta('promedio')">Promedio</button>
+            </div>
+
+            <div class="message-row bot">
+                <div class="message bot">
+                    Hola, soy el asistente virtual de UNINPAHU.
+                    Puedes saludarme o escribir directamente tu código de estudiante para iniciar la consulta.
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <div class="input-wrapper">
+                <input type="text" id="mensaje" placeholder="Escribe tu mensaje..." onkeypress="manejarEnter(event)">
+                <button onclick="enviar()">➤</button>
+            </div>
+            <div class="footer-note">Canal informativo de uso académico e institucional</div>
+        </div>
+    </div>
+
+    <script>
+        function manejarEnter(event) {
+            if (event.key === "Enter") {
+                enviar();
+            }
+        }
+
+        function usarPregunta(texto) {
+            const input = document.getElementById("mensaje");
+            input.value = texto;
+            enviar();
+        }
+
+        function agregarMensaje(texto, tipo) {
+            const chat = document.getElementById("chat");
+            const row = document.createElement("div");
+            row.className = "message-row " + tipo;
+
+            const bubble = document.createElement("div");
+            bubble.className = "message " + tipo;
+            bubble.textContent = texto;
+
+            row.appendChild(bubble);
+            chat.appendChild(row);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function mostrarEscribiendo() {
+            const chat = document.getElementById("chat");
+            const row = document.createElement("div");
+            row.className = "message-row bot";
+            row.id = "typing-row";
+
+            const bubble = document.createElement("div");
+            bubble.className = "typing";
+            bubble.textContent = "Consultando información...";
+
+            row.appendChild(bubble);
+            chat.appendChild(row);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function quitarEscribiendo() {
+            const typingRow = document.getElementById("typing-row");
+            if (typingRow) {
+                typingRow.remove();
+            }
+        }
+
+        function enviar() {
+            const input = document.getElementById("mensaje");
+            const mensaje = input.value.trim();
+
+            if (mensaje === "") {
+                return;
+            }
+
+            agregarMensaje(mensaje, "user");
+            input.value = "";
+            input.focus();
+
+            mostrarEscribiendo();
+
+            fetch("/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ mensaje: mensaje })
+            })
+            .then(response => response.json())
+            .then(data => {
+                quitarEscribiendo();
+                agregarMensaje(data.respuesta, "bot");
+            })
+            .catch(error => {
+                quitarEscribiendo();
+                agregarMensaje("Ocurrió un error de conexión con el servidor.", "bot");
+                console.error("Error:", error);
+            });
+        }
+    </script>
+
+</body>
+</html>
